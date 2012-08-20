@@ -33,6 +33,34 @@
 			attribution: 'Basemap is <a href="http://content.stamen.com/dotspotting_toner_cartography_available_for_download">Stamen Watercolor</a>, Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
 		}).addTo(map);
 
+		var appAvatar = L.Icon.extend({
+		    options: {
+			iconUrl: 'https://d2c01jv13s9if1.cloudfront.net/i/z/G/o/zGoMjhhKTKxI5cCeJlAkvFXy2L4.png?h=48&w=48',
+			iconSize: [48, 48]
+		    }
+		});
+
+                var egAppNetters = [
+{"la": 53.2, "lo": -0.2, "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/0a/71/00/0a71000000000000.jpg?h=48&w=48"},
+{"la": 52, "lo": -0.64, "iconUrl": ""},
+{"la": 51.22, "lo": 6.8, "iconUrl": ""},
+/*{"la": 0, "lo": 0, "iconUrl": "https://d2c01jv13s9if1.cloudfront.net/i/z/G/o/zGoMjhhKTKxI5cCeJlAkvFXy2L4.png?h=48&w=48"},*/
+                ];
+
+		var o = egAppNetters, icon;
+
+		if (o && o.length && o.length > 0) {
+			for (var i = 0; i < o.length; i++) {
+
+			if(o[i].iconUrl.length > 0)
+				icon = new appAvatar({iconUrl: o[i].iconUrl});
+			else
+				icon = new appAvatar();
+			L.marker([o[i].la, o[i].lo], {icon: icon}).addTo(map)
+
+			}
+		}
+
 		function onLocationFound(e) {
 			var radius = e.accuracy / 2;
 
