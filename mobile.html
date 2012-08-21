@@ -29,16 +29,16 @@
 		var map = new L.Map('map');
 
 		map.addLayer(new L.TileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {
-			maxZoom: 18,
+			maxZoom: 7,
 			attribution: 'Basemap is <a href="http://content.stamen.com/dotspotting_toner_cartography_available_for_download">Stamen Watercolor</a>, Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
 		}));
 
 		var appAvatar = L.Icon.extend({
-		    options: {
+//		    options: {
 			iconUrl: 'https://d2c01jv13s9if1.cloudfront.net/i/z/G/o/zGoMjhhKTKxI5cCeJlAkvFXy2L4.png?h=48&w=48',
 			iconSize: new L.Point(48, 48),
 			shadowUrl: null
-		    }/**/
+//		    }/**/
 		});
 
                 var egAppNetters = [
@@ -54,7 +54,7 @@
 			for (var i = 0; i < o.length; i++) {
 
 /**/			if(o[i].iconUrl.length > 0)
-				icon = new appAvatar({iconUrl: o[i].iconUrl});
+				icon = new appAvatar(o[i].iconUrl);
 			else /**/
 				icon = new appAvatar();
 			map.addLayer(new L.Marker(new L.LatLng(o[i].la, o[i].lo), {icon: icon}))
