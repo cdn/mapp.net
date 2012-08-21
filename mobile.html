@@ -101,6 +101,8 @@
 			var bounds = map.getBounds();
 			var sW = bounds.getSouthWest(), nE = bounds.getNorthEast(), lngS, latS, latLng;
 
+			sW = new L.LatLng(-70, -175); nE = new L.LatLng(70, 175);
+
 			lngS = nE.lng - sW.lng;
 			latS = nE.lat - sW.lat;
 
@@ -113,7 +115,7 @@
 
 		}
 
-		for(i = 0; i < 53; i++) { // 13
+		for(i = 0; i < 998; i++) { // 13 [ 9998 is too many :) ]
 			clst.addMarker(new L.Marker(getRandomLatLng(map), {icon: new appAvatar()}))
 		}
 
