@@ -7,10 +7,10 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.4/leaflet.css" />
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.css" />
 	<!--[if lte IE 8]><link rel="stylesheet" href="../dist/leaflet.ie.css" /><![endif]-->
 
-	<script src="http://cdn.leafletjs.com/leaflet-0.4.4/leaflet.js"></script>
+	<script src="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.js"></script>
 
 	<style>
 		body {
@@ -26,18 +26,19 @@
 	<div id="map"></div>
 
 	<script>
-		var map = L.map('map');
+		var map = new L.Map('map');
 
-		L.tileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {
+		map.addLayer(new L.TileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {
 			maxZoom: 18,
 			attribution: 'Basemap is <a href="http://content.stamen.com/dotspotting_toner_cartography_available_for_download">Stamen Watercolor</a>, Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
-		}).addTo(map);
+		}));
 
 		var appAvatar = L.Icon.extend({
 		    options: {
 			iconUrl: 'https://d2c01jv13s9if1.cloudfront.net/i/z/G/o/zGoMjhhKTKxI5cCeJlAkvFXy2L4.png?h=48&w=48',
-			iconSize: [48, 48]
-		    }
+			iconSize: new L.Point(48, 48),
+			shadowUrl: null
+		    }/**/
 		});
 
                 var egAppNetters = [
@@ -52,11 +53,11 @@
 		if (o && o.length && o.length > 0) {
 			for (var i = 0; i < o.length; i++) {
 
-			if(o[i].iconUrl.length > 0)
+/**/			if(o[i].iconUrl.length > 0)
 				icon = new appAvatar({iconUrl: o[i].iconUrl});
-			else
+			else /**/
 				icon = new appAvatar();
-			L.marker([o[i].la, o[i].lo], {icon: icon}).addTo(map)
+			map.addLayer(new L.Marker(new L.LatLng(o[i].la, o[i].lo), {icon: icon}))
 
 			}
 		}
@@ -64,10 +65,10 @@
 		function onLocationFound(e) {
 			var radius = e.accuracy / 2;
 
-			L.marker(e.latlng).addTo(map)
-				.bindPopup("You are within " + radius + " meters from this point").openPopup();
+			map.addLayer(new L.Marker(e.latlng).addTo(map)
+				.bindPopup("You are within " + radius + " meters from this point").openPopup());
 
-			L.circle(e.latlng, radius).addTo(map);
+			map.addLayer(new L.Circle(e.latlng, radius));
 		}
 
 		function onLocationError(e) {
