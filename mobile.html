@@ -82,6 +82,41 @@
 		map.on('locationerror', onLocationError);
 
 		map.locate({setView: true, maxZoom: 16});
+
+/*
+      function getRandomLatLng() {
+        var bounds = map.getBounds();
+        var southWest = bounds.getSouthWest();
+        var northEast = bounds.getNorthEast();
+        var lngSpan = northEast.lng() - southWest.lng();
+        var latSpan = northEast.lat() - southWest.lat();
+        var latLng = new google.maps.LatLng(
+            southWest.lat() + latSpan * Math.random(),
+            southWest.lng() + lngSpan * Math.random());
+        return latLng;
+      }
+*/
+
+		function getRandomLatLng() {
+			var bounds = map.getBounds();
+			var sW = bounds.getSouthWest(), nE = bounds.getNorthEast(), lngS, latS, latLng;
+
+			lngS = nE.lng - sW.lng;
+			latS = nE.lat - sW.lat;
+
+			latLng = new L.LatLng(
+			    sW.lat + latS * Math.random(),
+			    sW.lng + lngS * Math.random()
+			);
+
+			return latLng;
+
+		}
+
+		for(i = 0; i < 53; i++) { // 13
+			clst.addMarker(new L.Marker(getRandomLatLng(map), {icon: new appAvatar()}))
+		}
+
 	</script>
 </body>
 </html>
