@@ -27,12 +27,13 @@
 	<div id="map"></div>
 
 	<script>
-		var map = new L.Map('map');
+		var attr  = 'Basemap is <a href="http://content.stamen.com/dotspotting_toner_cartography_available_for_download">Stamen Watercolor</a>, Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>';
+		var toner = new L.TileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', {attribution: attr, maxZoom: 7}),
+		    water = new L.TileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {attribution: attr, maxZoom: 7});
 
-		map.addLayer(new L.TileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {
-			maxZoom: 7,
-			attribution: 'Basemap is <a href="http://content.stamen.com/dotspotting_toner_cartography_available_for_download">Stamen Watercolor</a>, Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
-		}));
+		var map = new L.Map('map', { layers: [toner, water] }), baseMaps = {'Toner': toner, 'Watercolour': water };
+
+		map.addControl(new L.Control.Layers(baseMaps))
 
 		map.setView(new L.LatLng(52.460193,-1.92647), 7);
 		var clst = new LeafClusterer(map, null, {});
@@ -83,20 +84,6 @@
 
 		map.locate({setView: true, maxZoom: 16});
 
-/*
-      function getRandomLatLng() {
-        var bounds = map.getBounds();
-        var southWest = bounds.getSouthWest();
-        var northEast = bounds.getNorthEast();
-        var lngSpan = northEast.lng() - southWest.lng();
-        var latSpan = northEast.lat() - southWest.lat();
-        var latLng = new google.maps.LatLng(
-            southWest.lat() + latSpan * Math.random(),
-            southWest.lng() + lngSpan * Math.random());
-        return latLng;
-      }
-*/
-
 		function getRandomLatLng() {
 			var bounds = map.getBounds();
 			var sW = bounds.getSouthWest(), nE = bounds.getNorthEast(), lngS, latS, latLng;
@@ -115,7 +102,7 @@
 
 		}
 
-		for(i = 0; i < 998; i++) { // 13 [ 9998 is too many :) ]
+		for(i = 0; i < 1498; i++) { // 13 [ 1998 - 9998 is too many :) ]
 			clst.addMarker(new L.Marker(getRandomLatLng(map), {icon: new appAvatar()}))
 		}
 
