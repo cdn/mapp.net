@@ -11,6 +11,7 @@
 	<!--[if lte IE 8]><link rel="stylesheet" href="../dist/leaflet.ie.css" /><![endif]-->
 
 	<script src="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.js"></script>
+	<script src=https://raw.github.com/ideak/leafclusterer/master/leafclusterer.js></script>
 
 	<style>
 		body {
@@ -29,21 +30,23 @@
 		var map = new L.Map('map');
 
 		map.addLayer(new L.TileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {
-			maxZoom: 18,
-			attribution: 'Basemap is <a href="http://content.stamen.com/dotspotting_toner_cartography_available_for_download">Stamen Watercolor</a>, Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+			maxZoom: 7,
+			attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.'
 		}));
 
+		map.setView(new L.LatLng(52.460193,-1.92647), 7);
+		var clst = new LeafClusterer(map, null, {});
+
 		var appAvatar = L.Icon.extend({
-		    options: {
 			iconUrl: 'https://d2c01jv13s9if1.cloudfront.net/i/z/G/o/zGoMjhhKTKxI5cCeJlAkvFXy2L4.png?h=48&w=48',
 			iconSize: new L.Point(48, 48),
 			shadowUrl: null
-		    }/**/
 		});
 
                 var egAppNetters = [
 {"la": 53.2, "lo": -0.2, "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/0a/71/00/0a71000000000000.jpg?h=48&w=48"},
 {"la": 52, "lo": -0.64, "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/24/20/00/2420000000000000.png?h=48&w=48"},
+{"la": 51.3, "lo": -0.09, "iconUrl": ""},
 {"la": 51.22, "lo": 6.8, "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/1d/01/00/1d01000000000000.jpg?h=48&w=48"},
 /*{"la": 0, "lo": 0, "iconUrl": "https://d2c01jv13s9if1.cloudfront.net/i/z/G/o/zGoMjhhKTKxI5cCeJlAkvFXy2L4.png?h=48&w=48"},*/
                 ];
@@ -53,11 +56,12 @@
 		if (o && o.length && o.length > 0) {
 			for (var i = 0; i < o.length; i++) {
 
-/**/			if(o[i].iconUrl.length > 0)
-				icon = new appAvatar({iconUrl: o[i].iconUrl});
-			else /**/
+			if(o[i].iconUrl.length > 0)
+				icon = new appAvatar(o[i].iconUrl);
+			else
 				icon = new appAvatar();
-			map.addLayer(new L.Marker(new L.LatLng(o[i].la, o[i].lo), {icon: icon}))
+	//		map.addLayer(new L.Marker(new L.LatLng(o[i].la, o[i].lo), {icon: icon}))
+			clst.addMarker(new L.Marker(new L.LatLng(o[i].la, o[i].lo), {icon: icon}))
 
 			}
 		}
@@ -65,8 +69,8 @@
 		function onLocationFound(e) {
 			var radius = e.accuracy / 2;
 
-			map.addLayer(new L.Marker(e.latlng).addTo(map)
-				.bindPopup("You are within " + radius + " meters from this point").openPopup());
+			map.addLayer(new L.Marker(e.latlng)
+				.bindPopup("You are within " + radius + " metres of this point").openPopup());
 
 			map.addLayer(new L.Circle(e.latlng, radius));
 		}
@@ -79,6 +83,43 @@
 		map.on('locationerror', onLocationError);
 
 		map.locate({setView: true, maxZoom: 16});
+
+/*
+      function getRandomLatLng() {
+        var bounds = map.getBounds();
+        var southWest = bounds.getSouthWest();
+        var northEast = bounds.getNorthEast();
+        var lngSpan = northEast.lng() - southWest.lng();
+        var latSpan = northEast.lat() - southWest.lat();
+        var latLng = new google.maps.LatLng(
+            southWest.lat() + latSpan * Math.random(),
+            southWest.lng() + lngSpan * Math.random());
+        return latLng;
+      }
+*/
+
+		function getRandomLatLng() {
+			var bounds = map.getBounds();
+			var sW = bounds.getSouthWest(), nE = bounds.getNorthEast(), lngS, latS, latLng;
+
+			sW = new L.LatLng(-70, -175); nE = new L.LatLng(70, 175);
+
+			lngS = nE.lng - sW.lng;
+			latS = nE.lat - sW.lat;
+
+			latLng = new L.LatLng(
+			    sW.lat + latS * Math.random(),
+			    sW.lng + lngS * Math.random()
+			);
+
+			return latLng;
+
+		}
+
+		for(i = 0; i < 998; i++) { // 13 [ 9998 is too many :) ]
+			clst.addMarker(new L.Marker(getRandomLatLng(map), {icon: new appAvatar()}))
+		}
+
 	</script>
 </body>
 </html>
