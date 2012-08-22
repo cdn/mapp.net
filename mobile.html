@@ -44,10 +44,10 @@
 		});
 
                 var egAppNetters = [
-{"la": 53.2, "lo": -0.2, "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/0a/71/00/0a71000000000000.jpg?h=48&w=48"},
-{"la": 52, "lo": -0.64, "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/24/20/00/2420000000000000.png?h=48&w=48"},
-{"la": 51.3, "lo": -0.09, "iconUrl": ""},
-{"la": 51.22, "lo": 6.8, "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/1d/01/00/1d01000000000000.jpg?h=48&w=48"},
+{"la": 53.2, "lo": -0.2, "n": 2726, "u": 'cdn', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/0a/71/00/0a71000000000000.jpg?h=48&w=48"},
+{"la": 52, "lo": -0.64, "n": 194, "u": 'documentally', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/24/20/00/2420000000000000.png?h=48&w=48"},
+{"la": 51.3, "lo": -0.09, "n": 350, "u": 'buddhamagnet', "iconUrl": "https://d2rfichhc2fb9n.cloudfront.net/image/4/xb3qTp_Dv88nJHv1VUwJ72-Bk96XVgoM2SYkzLmJgaXReuyBPAgdwl2oHY0ev1IF9kqwJZt88c33BwfqZ6325xJvdX5xBTnQfpy7z8p5CnIoQxSdfeGs6rbXBSKvnX5wS4Bh-cJPCSmxB3iKxlC3kAKAXbk?h=48&w=48"},
+{"la": 51.22, "lo": 6.8, "n": 1694, "u": 'ralf', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/1d/01/00/1d01000000000000.jpg?h=48&w=48"},
 /*{"la": 0, "lo": 0, "iconUrl": "https://d2c01jv13s9if1.cloudfront.net/i/z/G/o/zGoMjhhKTKxI5cCeJlAkvFXy2L4.png?h=48&w=48"},*/
                 ];
 
@@ -61,7 +61,7 @@
 			else
 				icon = new appAvatar();
 	//		map.addLayer(new L.Marker(new L.LatLng(o[i].la, o[i].lo), {icon: icon}))
-			clst.addMarker(new L.Marker(new L.LatLng(o[i].la, o[i].lo), {icon: icon}))
+			clst.addMarker(new L.Marker(new L.LatLng(o[i].la, o[i].lo), {icon: icon}).bindPopup(o[i].u + '<br>' + o[i].n))
 
 			}
 		}
@@ -116,8 +116,8 @@
 
 		}
 
-		for(i = 0; i < 998; i++) { // 13 [ 9998 is too many :) ]
-			clst.addMarker(new L.Marker(getRandomLatLng(map), {icon: new appAvatar()}))
+		for(i = 0; i < 1498; i++) { // 13 [ 9998 is too many :) ]
+			clst.addMarker(new L.Marker(getRandomLatLng(map), {icon: new appAvatar()}).bindPopup('rnd' + '<br>' + i))
 		}
 
 	</script>
