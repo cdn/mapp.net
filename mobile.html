@@ -27,13 +27,12 @@
 	<div id="map"></div>
 
 	<script>
-		var attr  = 'Basemap is <a href="http://content.stamen.com/dotspotting_toner_cartography_available_for_download">Stamen Watercolor</a>, Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>';
-		var toner = new L.TileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', {attribution: attr, maxZoom: 7}),
-		    water = new L.TileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {attribution: attr, maxZoom: 7});
+		var map = new L.Map('map');
 
-		var map = new L.Map('map', { layers: [toner, water] }), baseMaps = {'Toner': toner, 'Watercolour': water };
-
-		map.addControl(new L.Control.Layers(baseMaps))
+		map.addLayer(new L.TileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {
+			maxZoom: 7,
+			attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.'
+		}));
 
 		map.setView(new L.LatLng(52.460193,-1.92647), 7);
 		var clst = new LeafClusterer(map, null, {});
@@ -47,6 +46,7 @@
                 var egAppNetters = [
 {"la": 53.2, "lo": -0.2, "n": 2726, "u": 'cdn', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/0a/71/00/0a71000000000000.jpg?h=48&w=48"},
 {"la": 52, "lo": -0.64, "n": 194, "u": 'documentally', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/24/20/00/2420000000000000.png?h=48&w=48"},
+{"la": 51.3, "lo": -0.09, "n": 350, "u": 'buddhamagnet', "iconUrl": "https://d2rfichhc2fb9n.cloudfront.net/image/4/xb3qTp_Dv88nJHv1VUwJ72-Bk96XVgoM2SYkzLmJgaXReuyBPAgdwl2oHY0ev1IF9kqwJZt88c33BwfqZ6325xJvdX5xBTnQfpy7z8p5CnIoQxSdfeGs6rbXBSKvnX5wS4Bh-cJPCSmxB3iKxlC3kAKAXbk?h=48&w=48"},
 {"la": 51.22, "lo": 6.8, "n": 1694, "u": 'ralf', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/1d/01/00/1d01000000000000.jpg?h=48&w=48"},
 /*{"la": 0, "lo": 0, "iconUrl": "https://d2c01jv13s9if1.cloudfront.net/i/z/G/o/zGoMjhhKTKxI5cCeJlAkvFXy2L4.png?h=48&w=48"},*/
                 ];
@@ -102,7 +102,7 @@
 
 		}
 
-		for(i = 0; i < 1498; i++) { // 13 [ 1998 - 9998 is too many :) ]
+		for(i = 0; i < 1498; i++) { // 13 [ 9998 is too many :) ]
 			clst.addMarker(new L.Marker(getRandomLatLng(map), {icon: new appAvatar()}).bindPopup('rnd' + '<br>' + i))
 		}
 
