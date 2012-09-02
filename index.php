@@ -1,3 +1,11 @@
+<!DOCTYPE html>
+
+<meta charset=utf-8>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>mapp.net &sect; lab.cdn.cx : lab &middot; /see/ /dee/ /en/ -dot- /see/ /eks/ :</title>
+
 <?php
 
 // checking if the 'Remember me' checkbox was clicked
@@ -8,11 +16,29 @@ if (isset($_GET['rem'])) {
 	} else {
 		unset($_SESSION['rem']);
 	}
-	header('Location: index.php');
+	header('Location: .');
 }
 
 require_once '/path/to/EZAppDotNet.php';
 $app = new EZAppDotNet();
+
+$_SESSION['path'] = 'mapp.net/';
+
+/*
+echo '<pre>';
+
+//
+echo "print_r(\$app)\n\n";
+//
+print_r($app);
+
+//
+echo "print_r(\$_SESSION)\n\n";
+//
+print_r($_SESSION);
+
+echo "</pre>\n";
+*/
 
 // check that the user is signed in
 if ($app->getSession()) {
@@ -20,119 +46,18 @@ if ($app->getSession()) {
 	// get the current user as JSON
 	$data = $app->getUser();
 
-	// accessing the user's cover image
-	echo '<body style="background:url('.$data['cover_image']['url'].')">';
-	echo '<div style="background:#fff;opacity:0.8;padding:20px;margin:10px;border-radius:15px;">';
-	echo '<h1>Welcome to <a target="_blank" href="https://github.com/jdolitsky/AppDotNetPHP">';
-	echo 'AppDotNetPHP</a> (the EZ version)</h1>';
-
 	// accessing the user's name
 	echo '<h3>'.$data['name'].'</h3>';
 	
-	// accessing the user's avatar image
-	echo '<img style="border:2px solid #000;" src="'.$data['avatar_image']['url'].'" /><br>';
+	// accessing the user's avatar image - map placement will use this size
+	echo '<img style="border:2px solid #000;" src="'.$data['avatar_image']['url'].'?h=48&amp;w=48" /><br>';
 
-	// try posting to ADN
-	if (isset($_POST['run_tests'])) {
-		print "<hr />";
-		print "<h3>Testing ADN functionality</h3>";
-		print '<pre>';
-		print '<b>Your access token is: </b>'.htmlspecialchars($app->getAccessToken())."\n";
-		$token = $app->getAccessToken();
-		print "<b>Clearing access token</b>\n";
-		$app->setAccessToken(null);
-		print "<b>Checking that we can no longer access app.net's API...</b>";
-		print '<blockquote>';
-		try {
-			$denied = $app->getUser();
-			print " error - we were granted access without a token?!?\n";
-			exit;
-		}
-		catch (AppDotNetException $e) {
-			if ($e->getCode()==401) {
-				print " success (could not get access)\n";
-			}
-			else {
-				throw $e;
-			}
-		}
-		print '</blockquote>';
-		print "<b>Resetting access token</b>\n";
-		$app->setAccessToken($token);
-		print "<b>Attempting access again (this should work this time)...</b>";
-		print '<blockquote>';
-		$allowed = $app->getUser();
-		if (!$allowed || !isset($allowed['name']) || $allowed['name']!=$data['name']) {
-			print " error getting access again\n";
-			var_dump($allowed);
-			exit;
-		}
-		print "Success! We were granted access\n";
-		print '</blockquote>';
-		print "<b>Attempting to post a test message to app.net...</b>\n";
-		print "<blockquote>";
-		$sampleText = "Testing posting to app.net using AppDotNetPHP - ".uniqid(mt_rand(0,100000));
-		$create = $app->createPost($sampleText);
-		// we should now have a post ID and the text should be the same as above
-		if (!$create || !$create['id'] || $create['text']!=$sampleText) {
-			print "Error posting sample text to ADN\n";
-			var_dump($create);
-			exit;
-		}
-		print "Successfully posted to ADN, post ID is ".$create['id']."\n";
-		print "</blockquote>";
-
-		// try fetching the post
-		print "<b>Attempting to fetch sample post from app.net...</b>\n";
-		print "<blockquote>";
-		$get = $app->getPost($create['id']);
-		if (!$get || !$get['id'] || $get['id']!=$create['id'] || $get['text']!=$sampleText) {
-			print "Error fetching sample post from ADN:\n";
-			var_dump($get);
-			exit;
-		}
-		print "Successfully retrieved the sample post from ADN, post ID is ".$get['id']."\n";
-		print "</blockquote>";
-
-		// try deleting the post
-		print "<b>Attempting to delete the sample post from app.net...</b>\n";
-		print "<blockquote>";
-		$delete = $app->deletePost($create['id']);
-		if (!$delete || !$delete['id'] || $delete['id']!=$create['id']) {
-			print "Error deleting sample post from ADN:\n";
-			var_dump($delete);
-			exit;
-		}
-		print "Successfully deleted the sample post from ADN, post ID was ".$delete['id']."\n";
-		print "</blockquote>";
-
-		// more tests can/should be included here
-
-		// done tests!
-		print "<b>All test completed successfully!</b>\n";
-		print "</pre>";
-	}
-
-	else {
-		print "<hr />";
-		print "<h3>Complete user data</h3>";
-		echo '<pre style="font-weight:bold;font-size:16px">';
-		print_r($data);
-		echo '</pre>';
-	}
-
-	print "<hr />";
-	print '<form method="POST" action="index.php"><input type="submit" name="run_tests" value="Run POST/GET/DELETE tests" /><br />This will post a test message to your stream under your name, fetch it, then delete it.</form>';
-
-	print "<hr />";
-	echo '<h2><a href="signout.php">Sign out</a></h2>';
-
-	echo '</div></body>';
+	echo '<h2><a href="/signout.php">Sign out</a></h2>';
 
 // otherwise prompt to sign in
 } else {
 	
-	$url = $app->getAuthUrl();
+	$url = $app->getAuthUrl(); //'http://lab.cdn.cx/callback.php' ?_=mapp.net'); 500 with older lib / exception with current
 	echo '<a href="'.$url.'"><h2>Sign in using App.net</h2></a>';
 	if (isset($_SESSION['rem'])) {
 		echo 'Remember me <input type="checkbox" id="rem" value="1" checked/>';
@@ -154,4 +79,107 @@ if ($app->getSession()) {
 
 ?>
 
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.css" />
+	<!--[if lte IE 8]><link rel="stylesheet" href="../dist/leaflet.ie.css" /><![endif]-->
 
+	<script src="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.js"></script>
+	<script src=https://raw.github.com/ideak/leafclusterer/master/leafclusterer.js></script>
+
+	<style>
+		body {
+			padding: 0;
+			margin: 0;
+		}
+		html, body, #map {
+			height: 100%;
+		}
+		#map {  height: 40em }
+	</style>
+</head>
+<body>
+	<div id="map"></div>
+
+	<script>
+		var map = new L.Map('map');
+
+		map.addLayer(new L.TileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {
+			maxZoom: 7,
+			attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.'
+		}));
+
+		map.setView(new L.LatLng(52.460193,-1.92647), 7);
+		var clst = new LeafClusterer(map, null, {});
+
+		var appAvatar = L.Icon.extend({
+			iconUrl: 'https://d2c01jv13s9if1.cloudfront.net/i/z/G/o/zGoMjhhKTKxI5cCeJlAkvFXy2L4.png?h=48&w=48',
+			iconSize: new L.Point(48, 48),
+			shadowUrl: null
+		});
+
+                var egAppNetters = [
+{"la": 53.2, "lo": -0.2, "n": 2726, "u": 'cdn', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/0a/71/00/0a71000000000000.jpg?h=48&w=48"},
+{"la": 52, "lo": -0.64, "n": 194, "u": 'documentally', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/24/20/00/2420000000000000.png?h=48&w=48"},
+{"la": 51.3, "lo": -0.09, "n": 350, "u": 'buddhamagnet', "iconUrl": "https://d2rfichhc2fb9n.cloudfront.net/image/4/xb3qTp_Dv88nJHv1VUwJ72-Bk96XVgoM2SYkzLmJgaXReuyBPAgdwl2oHY0ev1IF9kqwJZt88c33BwfqZ6325xJvdX5xBTnQfpy7z8p5CnIoQxSdfeGs6rbXBSKvnX5wS4Bh-cJPCSmxB3iKxlC3kAKAXbk?h=48&w=48"},
+{"la": 51.22, "lo": 6.8, "n": 1694, "u": 'ralf', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/1d/01/00/1d01000000000000.jpg?h=48&w=48"},
+/*{"la": 0, "lo": 0, "iconUrl": "https://d2c01jv13s9if1.cloudfront.net/i/z/G/o/zGoMjhhKTKxI5cCeJlAkvFXy2L4.png?h=48&w=48"},*/
+                ];
+
+		var o = egAppNetters, icon;
+
+		if (o && o.length && o.length > 0) {
+			for (var i = 0; i < o.length; i++) {
+
+			if(o[i].iconUrl.length > 0)
+				icon = new appAvatar(o[i].iconUrl);
+			else
+				icon = new appAvatar();
+
+			clst.addMarker(new L.Marker(new L.LatLng(o[i].la, o[i].lo), {icon: icon}).bindPopup(o[i].u + '<br>' + o[i].n))
+
+			}
+		}
+
+		function onLocationFound(e) {
+			var radius = e.accuracy / 2;
+
+			map.addLayer(new L.Marker(e.latlng)
+				.bindPopup("You are within " + radius + " metres of this point").openPopup());
+
+			map.addLayer(new L.Circle(e.latlng, radius));
+		}
+
+		function onLocationError(e) {
+			alert(e.message);
+		}
+
+		map.on('locationfound', onLocationFound);
+		map.on('locationerror', onLocationError);
+
+		map.locate({setView: true, maxZoom: 16});
+
+		function getRandomLatLng() {
+			var bounds = map.getBounds();
+			var sW = bounds.getSouthWest(), nE = bounds.getNorthEast(), lngS, latS, latLng;
+
+			sW = new L.LatLng(-70, -175); nE = new L.LatLng(70, 175);
+
+			lngS = nE.lng - sW.lng;
+			latS = nE.lat - sW.lat;
+
+			latLng = new L.LatLng(
+			    sW.lat + latS * Math.random(),
+			    sW.lng + lngS * Math.random()
+			);
+
+			return latLng;
+		}
+
+/*
+		for(i = 0; i < 1498; i++) { // 13 [ 9998 is too many :) ]
+			clst.addMarker(new L.Marker(getRandomLatLng(map), {icon: new appAvatar()}).bindPopup('rnd' + '<br>' + i))
+		}
+*/
+
+	</script>
+</body>
+</html>
