@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<head>
 
 <meta charset=utf-8>
 
@@ -6,6 +7,26 @@
 
 <title>mapp.net &sect; lab.cdn.cx : lab &middot; /see/ /dee/ /en/ -dot- /see/ /eks/ :</title>
 
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.css" />
+	<!--[if lte IE 8]><link rel="stylesheet" href="../dist/leaflet.ie.css" /><![endif]-->
+
+	<script src="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.js"></script>
+	<script src=https://raw.github.com/ideak/leafclusterer/master/leafclusterer.js></script>
+
+	<style>
+		body {
+			padding: 0;
+			margin: 0;
+		}
+		html, body, #map {
+			height: 100%;
+		}
+		#map {  height: 40em }
+
+		#userblk { background: rgba(255,255,255, .7); position: absolute; right: 0; top: 0; z-index: 53 }
+	</style>
+</head>
+<body>
 <?php
 
 // checking if the 'Remember me' checkbox was clicked
@@ -40,23 +61,41 @@ print_r($_SESSION);
 echo "</pre>\n";
 */
 
+echo '<div id=userblk>';
+
 // check that the user is signed in
 if ($app->getSession()) {
+
+	try {
+		$denied = $app->getUser();
+	//	print " error - we were granted access without a token?!?\n";
+	//	exit;
+	}
+	catch (AppDotNetException $e) { // catch revoked access and existing session // Safari 6 doesn't like
+		if ($e->getCode()==401) {
+			print " success (could not get access)\n";
+		}
+		else {
+			throw $e;
+		}
+		$app->deleteSession();
+		header('Location: .'); die;
+	}
 
 	// get the current user as JSON
 	$data = $app->getUser();
 
 	// accessing the user's name
 	echo '<h3>'.$data['name'].'</h3>';
-	
-	// accessing the user's avatar image - map placement will use this size
+
+	// accessing the user's avatar image
 	echo '<img style="border:2px solid #000;" src="'.$data['avatar_image']['url'].'?h=48&amp;w=48" /><br>';
 
 	echo '<h2><a href="/signout.php">Sign out</a></h2>';
 
 // otherwise prompt to sign in
 } else {
-	
+
 	$url = $app->getAuthUrl(); //'http://lab.cdn.cx/callback.php' ?_=mapp.net'); 500 with older lib / exception with current
 	echo '<a href="'.$url.'"><h2>Sign in using App.net</h2></a>';
 	if (isset($_SESSION['rem'])) {
@@ -78,25 +117,8 @@ if ($app->getSession()) {
 }
 
 ?>
+</div>
 
-	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.css" />
-	<!--[if lte IE 8]><link rel="stylesheet" href="../dist/leaflet.ie.css" /><![endif]-->
-
-	<script src="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.js"></script>
-	<script src=https://raw.github.com/ideak/leafclusterer/master/leafclusterer.js></script>
-
-	<style>
-		body {
-			padding: 0;
-			margin: 0;
-		}
-		html, body, #map {
-			height: 100%;
-		}
-		#map {  height: 40em }
-	</style>
-</head>
-<body>
 	<div id="map"></div>
 
 	<script>
@@ -107,7 +129,22 @@ if ($app->getSession()) {
 			attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.'
 		}));
 
-		map.setView(new L.LatLng(52.460193,-1.92647), 7);
+<?php
+
+include('/path/to/geoipcity.inc');
+
+$gi = geoip_open('/path/to/geoip/GeoLiteCity.dat', GEOIP_STANDARD);
+
+$ip = $_SERVER['REMOTE_ADDR']; // IPv4 nnn.nnn.nnn.nnn
+$record = geoip_record_by_addr($gi, $ip);
+
+geoip_close($gi);
+
+?>
+	//	map.setView(new L.LatLng(52.460193,-1.92647), 7);
+		map.setView(new L.LatLng(<?php echo $record->latitude . ',' . $record->longitude ?>), 7);
+			map.addLayer(new L.Marker(map.getCenter())
+				.bindPopup("GeoIP thinks you're here (?)").openPopup());
 		var clst = new LeafClusterer(map, null, {});
 
 		var appAvatar = L.Icon.extend({
