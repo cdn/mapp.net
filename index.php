@@ -8,7 +8,7 @@
 <title>mapp.net &sect; lab.cdn.cx : lab &middot; /see/ /dee/ /en/ -dot- /see/ /eks/ :</title>
 
 	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.css" />
-	<!--[if lte IE 8]><link rel="stylesheet" href="../dist/leaflet.ie.css" /><![endif]-->
+	<!--[if lte IE 8]><link rel="stylesheet" href="//cdn.leafletjs.com/leaflet-0.3.1/leaflet.ie.css" /><![endif]-->
 
 	<script src="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.js"></script>
 	<script src=https://raw.github.com/ideak/leafclusterer/master/leafclusterer.js></script>
@@ -152,6 +152,22 @@ geoip_close($gi);
 			iconSize: new L.Point(48, 48),
 			shadowUrl: null
 		});
+
+<?php
+
+// db machinations | PDO php >= 5.1.0
+
+$pod = new PDO('mysql:host=localhost;dbname=database_name', $user, $pass);
+
+// check for tables in database
+
+$q0 = 'show tables'; // like '<prefix>%';
+
+// if no tables, create
+
+$q1 = 'create table ';
+
+?>
 
                 var egAppNetters = [
 {"la": 53.2, "lo": -0.2, "n": 2726, "u": 'cdn', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/0a/71/00/0a71000000000000.jpg?h=48&w=48"},
