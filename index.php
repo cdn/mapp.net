@@ -8,7 +8,7 @@
 <title>mapp.net &sect; lab.cdn.cx : lab &middot; /see/ /dee/ /en/ -dot- /see/ /eks/ :</title>
 
 	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.css" />
-	<!--[if lte IE 8]><link rel="stylesheet" href="//cdn.leafletjs.com/leaflet-0.3.1/leaflet.ie.css" /><![endif]-->
+	<!--[if lte IE 8]><link href="//cdn.leafletjs.com/leaflet-0.3.1/leaflet.ie.css" /><![endif]-->
 
 	<script src="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.js"></script>
 	<script src=https://raw.github.com/ideak/leafclusterer/master/leafclusterer.js></script>
@@ -157,15 +157,75 @@ geoip_close($gi);
 
 // db machinations | PDO php >= 5.1.0
 
+try {
+
 $pod = new PDO('mysql:host=localhost;dbname=database_name', $user, $pass);
+
+} catch (PDOException $e) {
+
+  echo 'alert("Sorry no database for you; ' . $e->getMessage() . '"); </script>'; die;
+
+}
 
 // check for tables in database
 
 $q0 = 'show tables'; // like '<prefix>%';
 
-// if no tables, create
+try {
 
-$q1 = 'create table ';
+$r0 = $pod->query($q0);
+
+} catch (PDOException $e) {
+
+  echo 'alert("Sorry no database for you (q0); ' . $e->getMessage() . '"); </script>'; die;
+
+}
+
+$j0 = 0;
+
+while($d0 = $r0->fetch()) { $j0++; }
+
+// if no tables, create
+if($j0 == 0) {
+
+$q1 =<<<EOC
+create table user_geo_data (
+
+ ugdid int(11) not null auto_increment,
+
+-- User data per https://github.com/appdotnet/api-spec/blob/master/objects.md
+ id varchar(255), username varchar(20), name varchar(255),
+
+-- Geo data, accuracy is down to the participant
+ latitude float(9,6), longitude float(9,6),
+
+-- indexing
+ primary key (ugdid),
+ key (id)
+
+) Engine=InnoDB DEFAULT CHARSET=utf8;
+EOC;
+
+try {
+
+$r1 = $pod->exec($q1); // exec | query
+
+} catch (PDOException $e) {
+
+  echo 'alert("Sorry no database for you (q1); ' . $e->getMessage() . '"); </script>'; die;
+
+}
+
+// blank on non-success | 0 on success,  apparently
+//echo 'alert("'.print_r($r1, true).'");';
+
+} // fi
+// $j0 > 0
+//else echo 'alert("Spectrum is Green.");';
+
+
+// Haversine selection of a number (<1500) of already listed AppNetters in your environs relative to GeoIP position
+$q2 = '';
 
 ?>
 
