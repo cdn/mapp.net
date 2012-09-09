@@ -12,6 +12,8 @@
 
 	<script src="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.js"></script>
 	<script src=https://raw.github.com/ideak/leafclusterer/master/leafclusterer.js></script>
+	<script src=//cdnjs.cloudflare.com/ajax/libs/prototype/1.7.1.0/prototype.js></script>
+	<script src=//cdnjs.cloudflare.com/ajax/libs/scriptaculous/1.8.3/scriptaculous.js></script>
 
 	<style>
 		body {
@@ -194,7 +196,7 @@ create table user_geo_data (
  ugdid int(11) not null auto_increment,
 
 -- User data per https://github.com/appdotnet/api-spec/blob/master/objects.md
- id varchar(255), username varchar(20), name varchar(255),
+ id varchar(255), username varchar(20), name varchar(255), avatar_image text,
 
 -- Geo data, accuracy is down to the participant
  latitude float(9,6), longitude float(9,6),
@@ -224,8 +226,18 @@ $r1 = $pod->exec($q1); // exec | query
 //else echo 'alert("Spectrum is Green.");';
 
 
+$geo = array('la' => $record->latitude, 'lo' => $record->longitude);
+
 // Haversine selection of a number (<1500) of already listed AppNetters in your environs relative to GeoIP position
-$q2 = '';
+
+$q2 = "select id, username, name, avatar_image, latitude, longitude,
+	      ( 3959 * acos( cos( radians(:la) ) * cos( radians( latitude ) ) * cos( radians( longitude )
+		- radians(:lo) ) + sin( radians(:la) ) * sin( radians( latitude ) ) ) ) AS distance
+	from user_geo_data ORDER BY distance limit 250";
+
+$r2 = $pod->prepare($q2);
+
+$r2->execute($geo);
 
 ?>
 
@@ -239,6 +251,32 @@ $q2 = '';
 
 		var o = egAppNetters, icon;
 
+<?php
+
+$j1 = 0; $an = '';
+while ($d1 = $r2->fetch(PDO::FETCH_OBJ)) {
+
+$an .= '{"la": ' . $d1->latitude . ', ';
+$an .=  '"lo": ' . $d1->longitude . ', ';
+$an .=  '"n": '  . $d1->id . ', ';
+$an .=  '"u": "' . $d1->username .'", ';
+$an .=  '"iconUrl": "' . $d1->avatar_image . '"';
+$an .= "},\n";
+
+$j1++;
+
+}
+
+if($j1 > 0) {
+
+echo "\t\tvar j1=$j1;\n";
+echo "\t\tvar an = [\n";
+echo $an;
+echo "\t\t];\n\n";
+
+}
+
+?>
 		if (o && o.length && o.length > 0) {
 			for (var i = 0; i < o.length; i++) {
 
