@@ -12,8 +12,6 @@
 
 	<script src="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.js"></script>
 	<script src=https://raw.github.com/ideak/leafclusterer/master/leafclusterer.js></script>
-	<script src=//cdnjs.cloudflare.com/ajax/libs/prototype/1.7.1.0/prototype.js></script>
-	<script src=//cdnjs.cloudflare.com/ajax/libs/scriptaculous/1.8.3/scriptaculous.js></script>
 
 	<style>
 		body {
@@ -63,100 +61,7 @@ print_r($_SESSION);
 echo "</pre>\n";
 */
 
-echo '<div id=userblk>';
-
-// check that the user is signed in
-if ($app->getSession()) {
-
-	try {
-		$denied = $app->getUser();
-	//	print " error - we were granted access without a token?!?\n";
-	//	exit;
-	}
-	catch (AppDotNetException $e) { // catch revoked access and existing session // Safari 6 doesn't like
-		if ($e->getCode()==401) {
-			print " success (could not get access)\n";
-		}
-		else {
-			throw $e;
-		}
-		$app->deleteSession();
-		header('Location: .'); die;
-	}
-
-	// get the current user as JSON
-	$data = $app->getUser();
-
-	// accessing the user's name
-	echo '<h3>'.$data['name'].'</h3>';
-
-	// accessing the user's avatar image
-	echo '<img style="border:2px solid #000;" src="'.$data['avatar_image']['url'].'?h=48&amp;w=48" /><br>';
-
-	echo '<h2><a href="/signout.php">Sign out</a></h2>';
-
-// otherwise prompt to sign in
-} else {
-
-	$url = $app->getAuthUrl(); //'http://lab.cdn.cx/callback.php' ?_=mapp.net'); 500 with older lib / exception with current
-	echo '<a href="'.$url.'"><h2>Sign in using App.net</h2></a>';
-	if (isset($_SESSION['rem'])) {
-		echo 'Remember me <input type="checkbox" id="rem" value="1" checked/>';
-	} else {
-		echo 'Remember me <input type="checkbox" id="rem" value="2" />';
-	}
-	?>
-	<script>
-	document.getElementById('rem').onclick = function(e){
-		if (document.getElementById('rem').value=='1') {
-			window.location='?rem=2';
-		} else {
-			window.location='?rem=1';
-		};
-	}
-	</script>
-	<?php
-}
-
-?>
-</div>
-
-	<div id="map"></div>
-
-	<script>
-		var map = new L.Map('map');
-
-		map.addLayer(new L.TileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {
-			maxZoom: 7,
-			attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.'
-		}));
-
-<?php
-
-include('/path/to/geoipcity.inc');
-
-$gi = geoip_open('/path/to/geoip/GeoLiteCity.dat', GEOIP_STANDARD);
-
-$ip = $_SERVER['REMOTE_ADDR']; // IPv4 nnn.nnn.nnn.nnn
-$record = geoip_record_by_addr($gi, $ip);
-
-geoip_close($gi);
-
-?>
-	//	map.setView(new L.LatLng(52.460193,-1.92647), 7);
-		map.setView(new L.LatLng(<?php echo $record->latitude . ',' . $record->longitude ?>), 7);
-			map.addLayer(new L.Marker(map.getCenter())
-				.bindPopup("GeoIP thinks you're here (?)").openPopup());
-		var clst = new LeafClusterer(map, null, {});
-
-		var appAvatar = L.Icon.extend({
-			iconUrl: 'https://d2c01jv13s9if1.cloudfront.net/i/z/G/o/zGoMjhhKTKxI5cCeJlAkvFXy2L4.png?h=48&w=48',
-			iconSize: new L.Point(48, 48),
-			shadowUrl: null
-		});
-
-<?php
-
+echo '<script>';
 // db machinations | PDO php >= 5.1.0
 
 try {
@@ -224,7 +129,133 @@ $r1 = $pod->exec($q1); // exec | query
 } // fi
 // $j0 > 0
 //else echo 'alert("Spectrum is Green.");';
+echo '</script>';
 
+
+// check that the user is signed in
+if ($app->getSession()) {
+
+	try {
+		$denied = $app->getUser();
+	//	print " error - we were granted access without a token?!?\n";
+	//	exit;
+	}
+	catch (AppDotNetException $e) { // catch revoked access and existing session // Safari 6 doesn't like
+		if ($e->getCode()==401) {
+			print " success (could not get access)\n";
+		}
+		else {
+			throw $e;
+		}
+		$app->deleteSession();
+		header('Location: .'); die;
+	}
+
+echo '<div id=userblk>';
+
+	// get the current user as JSON
+	$data = $app->getUser();
+
+	// accessing the user's name
+	echo '<h3>'.$data['name'].'</h3>';
+
+	// accessing the user's avatar image // GIF ragged since server-side scale not available (yet)
+	echo '<img height=48 style="border:2px solid #000;" src="'.$data['avatar_image']['url'].'?h=48&amp;w=48" /><br>';
+
+	echo '<h2><a href="/signout.php">Sign out</a></h2>';
+
+// check database for our user by id
+
+	$qu = 'select count(id) from user_geo_data where id = "' . $data['id'] . '"';
+
+	$n = $pod->query($qu)->fetch();
+
+// if not there, place in middle and allow for drag positioning with a submit button
+// submission via ajax with coordinates from map centre
+
+if($n[0] == 0) {
+
+	echo 'Drag map until you&#8217;re happy with where you&#8217;ll be placed, then &#8220;Pin&#8221;';
+
+	echo '</div>'; // end identity box
+
+						    // -24px 0 0 -24px
+	echo '<div id=avatar style="left: 50%; margin: -47px 0 0 -13px; position: absolute; top: 50%; z-index: 22">';
+	echo '<img height=48 src="'.$data['avatar_image']['url'].'?h=48&amp;w=48" width=48 />';
+	echo "</div>\n";
+
+// on successful submission (0 returned) place on map as Leaflet entity; fade/remove above and "pin" button
+
+	echo '<div id=pin-form style="left: 50%; margin: 0 0 0 -13px; position: absolute; top: 50%; z-index: 23">';
+	echo '<form action="" method=post><div><button id=pin-button>Pin</button></div></form></div>';
+
+}
+// possible future TODO allow remove/reposition
+
+// otherwise prompt to sign in
+} else {
+
+echo '<div id=userblk>';
+
+	$url = $app->getAuthUrl(); //'http://lab.cdn.cx/callback.php' ?_=mapp.net'); 500 with older lib / exception with current
+	echo '<a href="'.$url.'"><h2>Sign in using App.net</h2></a>';
+	if (isset($_SESSION['rem'])) {
+		echo 'Remember me <input type="checkbox" id="rem" value="1" checked/>';
+	} else {
+		echo 'Remember me <input type="checkbox" id="rem" value="2" />';
+	}
+	?>
+	<script>
+	document.getElementById('rem').onclick = function(e){
+		if (document.getElementById('rem').value=='1') {
+			window.location='?rem=2';
+		} else {
+			window.location='?rem=1';
+		};
+	}
+	</script>
+	<?php
+}
+
+?>
+<div><form id=search-form><div><input id=search-input placeholder=Somewhere></div></form></div>
+</div>
+
+	<div id="map"></div>
+
+	<script>
+		var map = new L.Map('map');
+
+		map.addLayer(new L.TileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {
+			maxZoom: 7,
+			attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.'
+		}));
+
+<?php
+
+include('/path/to/geoipcity.inc');
+
+$gi = geoip_open('/path/to/geoip/GeoLiteCity.dat', GEOIP_STANDARD);
+
+$ip = $_SERVER['REMOTE_ADDR']; // IPv4 nnn.nnn.nnn.nnn
+$record = geoip_record_by_addr($gi, $ip);
+
+geoip_close($gi);
+
+?>
+	//	map.setView(new L.LatLng(52.460193,-1.92647), 7);
+		map.setView(new L.LatLng(<?php echo $record->latitude . ',' . $record->longitude ?>), 7);
+			map.addLayer(new L.Marker(map.getCenter())
+				.bindPopup("GeoIP thinks you're here (?)").openPopup());
+		var clst = new LeafClusterer(map, null, {});
+
+		var appAvatar = L.Icon.extend({
+			iconUrl: 'https://d2c01jv13s9if1.cloudfront.net/i/z/G/o/zGoMjhhKTKxI5cCeJlAkvFXy2L4.png?h=48&w=48',
+			iconSize: new L.Point(48, 48),
+			shadowUrl: null
+		});
+
+<?php
 
 $geo = array('la' => $record->latitude, 'lo' => $record->longitude);
 
@@ -242,14 +273,14 @@ $r2->execute($geo);
 ?>
 
                 var egAppNetters = [
-{"la": 53.2, "lo": -0.2, "n": 2726, "u": 'cdn', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/0a/71/00/0a71000000000000.jpg?h=48&w=48"},
-{"la": 52, "lo": -0.64, "n": 194, "u": 'documentally', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/24/20/00/2420000000000000.png?h=48&w=48"},
+//{"la": 53.2, "lo": -0.2, "n": 2726, "u": 'cdn', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/0a/71/00/0a71000000000000.jpg?h=48&w=48"},
+//{"la": 52, "lo": -0.64, "n": 194, "u": 'documentally', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/24/20/00/2420000000000000.png?h=48&w=48"},
 {"la": 51.3, "lo": -0.09, "n": 350, "u": 'buddhamagnet', "iconUrl": "https://d2rfichhc2fb9n.cloudfront.net/image/4/xb3qTp_Dv88nJHv1VUwJ72-Bk96XVgoM2SYkzLmJgaXReuyBPAgdwl2oHY0ev1IF9kqwJZt88c33BwfqZ6325xJvdX5xBTnQfpy7z8p5CnIoQxSdfeGs6rbXBSKvnX5wS4Bh-cJPCSmxB3iKxlC3kAKAXbk?h=48&w=48"},
 {"la": 51.22, "lo": 6.8, "n": 1694, "u": 'ralf', "iconUrl": "https://d1f0fplrc06slp.cloudfront.net/assets/user/1d/01/00/1d01000000000000.jpg?h=48&w=48"},
 /*{"la": 0, "lo": 0, "iconUrl": "https://d2c01jv13s9if1.cloudfront.net/i/z/G/o/zGoMjhhKTKxI5cCeJlAkvFXy2L4.png?h=48&w=48"},*/
                 ];
 
-		var o = egAppNetters, icon;
+		var o = egAppNetters, icon, an;
 
 <?php
 
@@ -270,13 +301,16 @@ $j1++;
 if($j1 > 0) {
 
 echo "\t\tvar j1=$j1;\n";
-echo "\t\tvar an = [\n";
+echo "\t\tan = [\n";
 echo $an;
 echo "\t\t];\n\n";
 
 }
 
 ?>
+		if(an && an.length && an.length > 0)
+			o = o.concat(an);
+
 		if (o && o.length && o.length > 0) {
 			for (var i = 0; i < o.length; i++) {
 
@@ -332,5 +366,93 @@ echo "\t\t];\n\n";
 */
 
 	</script>
+	<script src=//cdnjs.cloudflare.com/ajax/libs/prototype/1.7.1.0/prototype.js></script>
+	<script>
+
+	function recentre(y) {
+
+	  var c, o = eval(y.responseText); // eval() !
+
+	  if(o && o.length && Math.abs(o[0].la) > 0) {
+
+	    c = new L.LatLng(o[0].la, o[0].lo);
+	    map.setView(c, 7);
+
+	  } else {
+	    c = new L.LatLng(53.800651, -4.064941);
+	    map.addLayer(rasterLayer).setView(c, 7); // 13
+	  }
+
+	}
+
+	function loadr() {
+
+	var rrow = $('search-button'), f = $('search-form'), i = $('search-input');
+
+	if(rrow != null) {
+	Event.observe(rrow, 'click', function(){
+	 new Ajax.Request('./ajax.php', { method: 'get', onComplete: recentre, parameters: 'q=' + escape(i.value.toUpperCase()) })
+	});
+	}
+
+	Event.observe(f, 'submit', function(e){
+	 new Ajax.Request('./ajax.php', { method: 'get', onComplete: recentre, parameters: 'q=' + escape(i.value.toUpperCase()) });
+	/* propagation blocking */ e.preventDefault(); // good enough for Fx
+	});
+
+	}
+
+	Event.observe(window, 'load', loadr);
+
+	</script>
+<?php
+if($app->getSession() && $n[0] == 0) {
+
+echo <<<EOJ
+	<script src=//cdnjs.cloudflare.com/ajax/libs/scriptaculous/1.8.3/scriptaculous.js></script>
+	<script src="./j/effects.js"></script>
+
+	<script>
+
+	function post_pin(r) {
+
+	var rT = r.responseText, i = $('avatar').getElementsByTagName('img')[0];
+
+	if(rT == 0) {
+
+	var icon = new appAvatar(i.src);
+	map.addLayer(new L.Marker(map.getCenter(), {icon: icon})); // 24px offset issue
+
+	$('avatar').fade();
+	$('pin-form').fade();
+
+	}
+
+	}
+
+	function pin_me(event) {
+
+	var c = map.getCenter(), a = c.lng, b = c.lat;
+
+        new Ajax.Request(
+            './ajax.php',
+          {
+            method: 'post',
+            parameters: 'lon=' + escape(a) + '&lat=' + escape(b),
+            onComplete: post_pin
+          }
+        );
+
+	event.stop();
+
+	}
+
+	$('pin-form').observe('submit', pin_me);
+
+	</script>
+
+EOJ;
+}
+?>
 </body>
 </html>
