@@ -23,7 +23,7 @@ echo $a->Result->longitude;
 echo '}]';
 
 die;
-} else { echo -1; }
+} // else { echo -1; }
 
 // if map placement (POST) add ADN user and their geo data to database
 
@@ -35,7 +35,7 @@ $lo = (double)$_POST['lon'];
 if(abs($la) > 90 || abs($lo) > 180) {
 // latitude and/or longitude out of range
 // return -2
-echo '-2'; die;
+ echo -2; die;
 }
 
 // session for user data, rather than complicating things by passing it
@@ -69,8 +69,8 @@ if ($app->getSession()) {
 	$data['latitude']  = 50.0;
 	$data['longitude'] = -0.0;
 
-	$data['latitude']  = $lat;
-	$data['longitude'] = $lon;
+	$data['latitude']  = $la;
+	$data['longitude'] = $lo;
 
 
 	// db machinations | PDO php >= 5.1.0
@@ -83,9 +83,11 @@ if ($app->getSession()) {
 
 	 // echo 'alert("Sorry no database for you; ' . $e->getMessage() . '"); </script>'; die;
 	 // return -4
-	 echo -4;
+	 echo -4; die;
 	}
 
+	// reduce object to url reference
+	$data['avatar_image'] = $data['avatar_image']['url'].'?h=48&amp;w=48';
 
 	$qi  = 'insert into user_geo_data ';
 	$qi .= '(id, username, name, avatar_image, latitude, longitude) values ';
@@ -96,9 +98,16 @@ if ($app->getSession()) {
 
 	  $pod->beginTransaction();
 
-	  $pod->prepare($qi);
+	  $r = $pod->prepare($qi);
 
-	  $pod->execute($data);
+	  $r->bindParam(':id', $data['id'], PDO::PARAM_STR);
+	  $r->bindParam(':username', $data['username'], PDO::PARAM_STR, 20);
+	  $r->bindParam(':name', $data['name'], PDO::PARAM_STR);
+	  $r->bindParam(':avatar_image', $data['avatar_image'], PDO::PARAM_STR);
+	  $r->bindParam(':latitude', $data['latitude'], PDO::PARAM_STR);
+	  $r->bindParam(':longitude', $data['longitude'], PDO::PARAM_STR);
+
+	  $r->execute();
 
 	  $pod->commit();
 
@@ -106,8 +115,10 @@ if ($app->getSession()) {
 	  $pod->rollBack();
 
 	  // suitable error return [-5]
-	  echo -5;
+	  echo -5; die;
 	}
+
+	echo 0;
 
 } // fi
 
